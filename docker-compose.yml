@@ -1,0 +1,94 @@
+# docker-compose.yml
+# InboxPilot Distributed — A2A multi-agent system
+#
+# Services:
+#   fetch-service    → port 8001 (IMAP fetch agent)
+#   classify-service → port 8002 (Groq classification agent)
+#   respond-service  → port 8003 (Groq draft generation agent)
+#   supervisor       → port 8080 (LangGraph coordinator)
+#
+# Usage:
+#   docker compose up --build        # first time
+#   docker compose up -d             # subsequent runs
+#   inboxpilot-dist check            # run the pipeline (from host)
+#   docker compose down              # stop everything
+
+x-common: &common
+  env_file:
+    - .env
+  restart: unless-stopped
+  networks:
+    - inboxpilot
+
+services:
+
+  fetch-service:
+    <<: *common
+    build:
+      context: .
+      dockerfile: services/fetch-service/Dockerfile
+    ports:
+      - "8001:8001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  classify-service:
+    <<: *common
+    build:
+      context: .
+      dockerfile: services/classify-service/Dockerfile
+    ports:
+      - "8002:8002"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  respond-service:
+    <<: *common
+    build:
+      context: .
+      dockerfile: services/respond-service/Dockerfile
+    ports:
+      - "8003:8003"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8003/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  supervisor:
+    <<: *common
+    build:
+      context: .
+      dockerfile: services/supervisor/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      FETCH_SERVICE_URL: "http://fetch-service:8001"
+      CLASSIFY_SERVICE_URL: "http://classify-service:8002"
+      RESPOND_SERVICE_URL: "http://respond-service:8003"
+    depends_on:
+      fetch-service:
+        condition: service_healthy
+      classify-service:
+        condition: service_healthy
+      respond-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+networks:
+  inboxpilot:
+    driver: bridge

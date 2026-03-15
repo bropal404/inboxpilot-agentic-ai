@@ -1,0 +1,73 @@
+app:
+  name: "InboxPilot"
+  version: "1.0.0"
+  mode: "production"  # demo | production
+
+  demo:
+    email_count: 5
+    simulate_latency: true
+    latency_ms: 300
+
+email:
+  imap_host: "imap.gmail.com"
+  imap_port: 993
+  username: "${INBOX_EMAIL}"        # Set via env var INBOX_EMAIL
+  password: "${INBOX_PASSWORD}"        # Set via env var INBOX_PASSWORD
+  check_folder: "INBOX"
+  max_fetch: 10
+  mark_as_read: false
+
+  drafts_folder: "Drafts"
+  auto_save_drafts: true
+
+calendar:
+  provider: "none"  # none | google | outlook
+  google_credentials_path: "calendar_credentials.json"
+  google_token_path: "calendar_token.json"
+  meeting_duration_minutes: 30
+  buffer_minutes: 15
+  max_days_ahead: 5
+  preferred_hours: "9:00-17:00"
+
+agents:
+  fetch:
+    retry_attempts: 3
+    retry_delay_seconds: 2
+    timeout_seconds: 30
+
+  classify:
+    model: "llama-3.3-70b-versatile"
+    temperature: 0.1
+    confidence_threshold: 0.8
+    auto_archive_categories:
+      - "newsletter"
+      - "spam"
+
+  respond:
+    model: "llama-3.1-8b-instant"
+    temperature: 0.7
+    max_tokens: 500
+    require_approval: true
+    include_signature: true
+    signature: ""
+
+memory:
+  type: "simulated"
+  persist_path: "inboxpilot_memory.json"
+  auto_save: true
+  retain_history_days: 30
+
+logging:
+  level: "INFO"
+  show_agent_thoughts: true
+  show_tool_calls: true
+  log_file: "inboxpilot.log"
+  trace_file: "agent_traces.jsonl"
+
+security:
+  allowed_domains: []
+  blocked_domains:
+    - "suspicious.com"
+    - "phishing.net"
+  max_attachment_size_mb: 10
+  sanitize_html: true
