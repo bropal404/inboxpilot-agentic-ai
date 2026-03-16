@@ -23,3 +23,9 @@ dist/
 .pytest_cache/
 .coverage
 htmlcov/
+
+*.aux
+*.nav
+*.out
+*.snm
+*.toc
