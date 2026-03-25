@@ -37,6 +37,8 @@ services:
     build:
       context: ./orchestrator
     container_name: platform-orchestrator
+    user: root
+    privileged: true
     ports:
       - "8000:8000"
     volumes:

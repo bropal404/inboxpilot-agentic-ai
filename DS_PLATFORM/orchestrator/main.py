@@ -166,7 +166,15 @@ async def deploy_app(file: UploadFile = File(...)):
 
         app_name = app_name.lower().replace('_', '-')
 
-        os.system(f'docker run --rm --network platform-net minio/mc:latest sh -c "mc alias set myminio http://minio:9000 admin adminpassword && mc mb myminio/app-{app_name} --ignore-existing" || true')
+        try:
+            client.containers.run(
+                "minio/mc:latest",
+                f'sh -c "mc alias set myminio http://minio:9000 admin adminpassword && mc mb myminio/app-{app_name} --ignore-existing"',
+                network="platform-net",
+                remove=True
+            )
+        except Exception as e:
+            print(f"MinIO bucket creation issue: {e}")
 
         in_topic = f"{app_name}-requests"
         out_topic = f"{app_name}-responses"
