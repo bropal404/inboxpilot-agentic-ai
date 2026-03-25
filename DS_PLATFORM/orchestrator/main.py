@@ -17,7 +17,7 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -166,15 +166,8 @@ async def deploy_app(file: UploadFile = File(...)):
 
         app_name = app_name.lower().replace('_', '-')
 
-        # 3. Create MinIO & Kafka resources
-        # Using a temporary docker container for mc is slow. 
-        # But we can also use minio python client, wait, let's just use os.system for curl if we don't have minio lib here.
-        # It's better to just mount the orchestrator to orchestrator's network, they connect to minio. 
-        # Actually minio auto-creates buckets on first put if policies allow, but we must be explicit.
-        # "Uses MinIO client with assigned bucket". we don't need to explicitly create if the app creates it, or we can use docker SDK to run 'mc'.
         os.system(f'docker run --rm --network platform-net minio/mc:latest sh -c "mc alias set myminio http://minio:9000 admin adminpassword && mc mb myminio/app-{app_name} --ignore-existing" || true')
 
-        # Create Kafka Topics
         in_topic = f"{app_name}-requests"
         out_topic = f"{app_name}-responses"
         fs = admin_client.create_topics([

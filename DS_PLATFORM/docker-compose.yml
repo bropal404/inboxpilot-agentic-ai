@@ -58,6 +58,7 @@ services:
       - "3000:3000"
     networks:
       - platform-net
+    privileged: true
 
 networks:
   platform-net:
