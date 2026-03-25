@@ -1,13 +1,9 @@
-FROM python:3.12-slim
-
+FROM python:3.10-slim
 WORKDIR /app
-
-RUN apt-get update && apt-get install -y --no-install-recommends gcc \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY . /app
-
-RUN pip install --no-cache-dir -e ".[distributed]"
-
-EXPOSE 8080
-CMD ["uvicorn", "services.supervisor.main:app", "--host", "0.0.0.0", "--port", "8080"]
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY a2a/ a2a/
+RUN touch a2a/__init__.py
+COPY services/supervisor/main.py .
+ENV PYTHONPATH=/app
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000"]
