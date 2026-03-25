@@ -1,0 +1,6 @@
+name: langraph-agent
+topics:
+  input: langraph-agent-requests
+  output: langraph-agent-responses
+resources:
+  memory: 2G

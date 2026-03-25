@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+confluent-kafka
+langgraph
+langchain-core
+redis
+minio
